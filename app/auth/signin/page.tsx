@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { signIn } from "next-auth/react";
 import { Button, Input } from "@material-tailwind/react";
 
@@ -9,16 +9,30 @@ const LoginPage = () => {
     const userName = useRef("");
     const pass = useRef("");
 
-    const onSubmit = async () => {
-        const result = await signIn("credentials", {
-            username: userName.current,
-            password: pass.current,
-            redirect: true,
-            callbackUrl: "/",
-        });
+    const [messageError, setMessageError] = useState("")
 
-        console.log(result);
+    const onSubmit = async () => {
+        if (!userName.current || !pass.current) {
+            console.error("Username and password are required.");
+            setMessageError("กรุณาใส่ข้อมูลให้ครบ")
+            return;
+        }
+
+        try {
+            const result = await signIn("credentials", {
+                username: userName.current,
+                password: pass.current,
+                redirect: true,
+                callbackUrl: "/",
+            });
+
+            console.log(result);
+        } catch (error) {
+            console.error("Login error:", error);
+        }
     };
+
+
     return (
         <div
             className={
@@ -39,7 +53,9 @@ const LoginPage = () => {
                         onChange={(e) => (pass.current = e.target.value)}
                     />
                 </div>
-
+                <div className="text-red-500 text-sm">
+                    {messageError}
+                </div>
                 <Button onClick={onSubmit}>Login</Button>
             </div>
         </div>
